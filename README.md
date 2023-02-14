@@ -10,7 +10,7 @@ The default python version for this project environment is `Python 3.6.8`
 conda env create -f environment.yml
 ```
 
-	2. To activate and deactivate the conda environment for this project:
+2. To activate and deactivate the conda environment for this project:
 
 ```
 conda activate langid
