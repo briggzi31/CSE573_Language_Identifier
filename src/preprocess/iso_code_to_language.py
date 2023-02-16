@@ -6,12 +6,12 @@ class ISOCodeToLanguage:
         Object mapping ISO codes to their respective English name
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         with open("data/lan_to_language.json") as f:
             self.iso_to_lang = json.load(f)
 
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> str:
         """
         :param item: A string representing an ISO code
         :return: The name of the language mapped to the ISO code
@@ -25,12 +25,11 @@ class ISOCodeToLanguage:
         return self.iso_to_lang[item]
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.iso_to_lang)
 
 
 if __name__ == '__main__':
     iso_to_lang = ISOCodeToLanguage()
-
     print(iso_to_lang)
     print(iso_to_lang["eng"])
