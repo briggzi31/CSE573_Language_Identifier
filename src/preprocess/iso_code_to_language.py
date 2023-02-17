@@ -31,5 +31,4 @@ class ISOCodeToLanguage:
 
 if __name__ == '__main__':
     iso_to_lang = ISOCodeToLanguage()
-    print(iso_to_lang)
-    print(iso_to_lang["eng"])
+
