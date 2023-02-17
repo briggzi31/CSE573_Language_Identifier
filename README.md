@@ -29,3 +29,15 @@ conda env update -f environment.yml
 conda env export > environment.yml
 ```
 
+
+
+## Pipeline
+
+Note: All scripts must be run from the home directory (topmost directory)
+
+1. Split the data into training and testing sets
+
+```
+python3 src/preprocess/train_test_split.py
+```
+
