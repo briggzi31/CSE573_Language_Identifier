@@ -32,10 +32,17 @@ class CharIndex:
         self.charbigram_to_index = {}
         self.index_to_charbigram = []
 
+        self.term_to_index = {}
+        self.index_to_term = []
+
         self.traverse_data(data_file_path)
+
+        print(self.term_to_index)
 
 
     def traverse_data(self, data_file_path):
+        # print(data_file_path)
+
         file = open(data_file_path)
         data = csv.reader(file)
 
@@ -47,30 +54,43 @@ class CharIndex:
 
             text = row[-1].strip()
 
-            # special case, BOS token
-            prev_char = "<s>"
-            for char in text:
+            self._char_level_indices(text)
+            self._term_level_indices(text)
 
-                # add current char and its corresponding index
-                if char not in self.char_to_index:
-                    self.char_to_index[char] = len(self.index_to_char)
-                    self.index_to_char.append(char)
+        file.close()
 
-                # add current bigram and its corresponding index
-                cur_bigram = prev_char + char
-                if cur_bigram not in self.charbigram_to_index:
-                    self.charbigram_to_index[cur_bigram] = len(self.index_to_charbigram)
-                    self.index_to_charbigram.append(cur_bigram)
 
-                prev_char = char
+    def _term_level_indices(self, text):
+        text = text.split()
 
-            # special case, EOS token
-            cur_bigram = prev_char + '</s>'
+        for term in text:
+            if term not in self.term_to_index:
+                self.term_to_index[term] = len(self.index_to_term)
+                self.index_to_term.append(term)
+
+    def _char_level_indices(self, text):
+        # special case, BOS token
+        prev_char = "<s>"
+        for char in text:
+
+            # add current char and its corresponding index
+            if char not in self.char_to_index:
+                self.char_to_index[char] = len(self.index_to_char)
+                self.index_to_char.append(char)
+
+            # add current bigram and its corresponding index
+            cur_bigram = prev_char + char
             if cur_bigram not in self.charbigram_to_index:
                 self.charbigram_to_index[cur_bigram] = len(self.index_to_charbigram)
                 self.index_to_charbigram.append(cur_bigram)
 
-        file.close()
+            prev_char = char
+
+        # special case, EOS token
+        cur_bigram = prev_char + '</s>'
+        if cur_bigram not in self.charbigram_to_index:
+            self.charbigram_to_index[cur_bigram] = len(self.index_to_charbigram)
+            self.index_to_charbigram.append(cur_bigram)
 
     def get_char_index(self, char):
         """
@@ -103,19 +123,35 @@ class CharIndex:
         except:
             return -1
 
+    def get_term_index(self, term):
+        """
+        :param term: a term as a string
+        :return: the int corresponding to the given term
+            if term not seen before, returns -1
+        """
+        #check if term
+        if not (isinstance(term, str)):
+            raise ValueError(f"term argument not type str, instead got {term}")
+
+        try:
+            return self.term_to_index[term]
+        except:
+            return -1
+
 
     def __getitem__(self, item):
         """
-        :param item: int index, and the type of character gram as a string, i.e. "unigram" or "bigram"
+        :param item: int index, and the type of character/term gram as a string, i.e. "unigram", "bigram", "term"
         :return:
-            The corresponding character gram mapped to the given integer index
-            If given index not associated with a character, returns -1
+            The corresponding character/term gram mapped to the given integer index
+            If given index not associated with a character/term, returns -1
         """
         if len(item) != 2:
             raise ValueError(
                 f"argument must contain int index and either a "
                 f"unigram char or bigram char as a string, but got {item}"
             )
+
         index = item[0]
         gram = item[1]
 
@@ -129,9 +165,17 @@ class CharIndex:
                 return self.index_to_char[index]
             except:
                 return -1
+        elif gram == "term":
+            try:
+                return self.index_to_term[index]
+            except:
+                return -1
 
         # something is wrong
-        raise ValueError(f"Unable to return the char. Received the argument {item}")
+        raise ValueError(
+                f"Unable to return the char or term. Argument should be index and either"
+                f"'unigram', 'bigram', or 'term', but received the argument {item}"
+        )
 
 
     def save(self, output_file_path):

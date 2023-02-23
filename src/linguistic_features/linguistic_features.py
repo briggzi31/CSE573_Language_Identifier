@@ -9,11 +9,40 @@ from src.preprocess.iso_code_to_language import ISOCodeToLanguage
 class LinguisticFeatures:
 
     def __init__(self, train_data, pickle_file_out):
-        self.train_data = train_data
+        self.train_data = self.process_data(train_data)
         self.pickle_file_out = pickle_file_out
 
         self.loaded_char_indices = None
+
+        # feature_vectors = self.get_linguistic_features()
         return
+
+
+    def process_data(self, train_data_path):
+        """
+        :param train_data_path:  takes in a path to a csv file
+        :return: a list of instances, where each instance is a list as follows:
+                0           1         2
+            instance_id, iso_code, raw_text
+        """
+        data = []
+        with open(train_data_path, 'r') as file:
+            csv_reader = csv.reader(file)
+
+            header = True
+            id = 1
+            for instance in csv_reader:
+                # for header
+                if header:
+                    header = False
+                    continue
+
+                new_inst = [id]
+                new_inst.extend(instance[-2:])
+                data.append(tuple(new_inst))
+                id += 1
+        return data
+
 
     def get_linguistic_features(self):
         """
@@ -32,16 +61,43 @@ class LinguisticFeatures:
                     self.get_word_level_features()
                     break
                 i += 1
-        return
+        return []
 
-    def get_word_level_features(self):
+    def get_word_level_features(self, k):
         """
         Computes all linguistic features at word-level.
             Linguistic features computed:
                 (1) Top k frequent words
                 (2) Average length of the full word
+
+        :returns:
         """
-        pass
+        word_features = []
+
+        for id, iso_code, text in self.train_data:
+            text = text.strip().split()
+            term_counter = {}
+
+            tot_length = 0
+            tot_term = 0
+            for term in text:
+                tot_length += len(term)
+
+                if term not in term_counter:
+                    term_counter[term] = 0
+                term_counter[term] += 1
+
+
+            term_counter = sorted(term_counter.items(), key=lambda item: item[1])[:k]
+            term_counter = [term for term, value in term_counter]
+
+            avg_length = tot_length / len(text)
+
+            word_features.append(term_counter, avg_length)
+
+
+
+
 
     def get_char_level_features(self, doc, k=3):
         """
@@ -93,17 +149,19 @@ class LinguisticFeatures:
         return top_n_char_indices
 
     @staticmethod
-    def create_char_indices(train_data, pickle_file_out):
+    def create_char_indices(train_data_path, pickle_file_out):
         if not os.path.isfile(pickle_file_out):
-            char_index.create_char_indices(train_data, pickle_file_out)
+            char_index.create_char_indices(train_data_path, pickle_file_out)
 
         with open(pickle_file_out, 'rb') as f:
             loaded_char_indices = pickle.load(f, encoding="utf-8")
 
         print(loaded_char_indices.get_char_index("他"))  # returns 283 for data/train.csv
         print(loaded_char_indices.get_char_bigram_index("シャ"))  # returns 2149 for data/train.csv
+        print(loaded_char_indices.get_term_index("Kros")) # returns 330 for data/train.csv
         print(loaded_char_indices[0, "unigram"])  # returns 'M' for data/train.csv
         print(loaded_char_indices[0, "bigram"])  # returns '<s>M' for data/train.csv
+        print(loaded_char_indices[0, "term"]) # returns 'Mi' for data/train.csv
 
         return loaded_char_indices
 
@@ -111,3 +169,17 @@ class LinguisticFeatures:
     def make_iso_codes():
         iso_codes = ISOCodeToLanguage()
         return iso_codes
+
+
+# lf = LinguisticFeatures(
+#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
+#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/pickle_objects/train_char_indices.pickle")
+# lf.get_linguistic_features()
+# # lf.get_word_level_features()
+# lf.process_data(
+#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
+# )
+
+
+if __name__ == '__main__':
+    pass
