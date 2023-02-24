@@ -8,8 +8,9 @@ from src.preprocess.iso_code_to_language import ISOCodeToLanguage
 
 class LinguisticFeatures:
 
-    def __init__(self, train_data, pickle_file_out):
-        self.train_data = self.process_data(train_data)
+    def __init__(self, train_data_path, pickle_file_out):
+        self.train_data_path = train_data_path
+        self.train_data = self.process_data(train_data_path)
         self.pickle_file_out = pickle_file_out
 
         self.loaded_char_indices = None
@@ -43,27 +44,27 @@ class LinguisticFeatures:
                 id += 1
         return data
 
-
-    def get_linguistic_features(self):
+    def get_linguistic_features(self, k_char=3, k_word=3, k_char_bg=3):
         """
         Iterate through the dataset and compute linguistic feature vectors for each document in data.
         """
         # Load char-to-index mapping from pickle file
-        self.loaded_char_indices = self.create_char_indices(self.train_data, self.pickle_file_out)
+        self.loaded_char_indices = self.create_char_indices(self.train_data_path, self.pickle_file_out)
+
+        features = []
 
         # Process each instance/doc in train data
-        with open(self.train_data, 'r') as file:
-            csv_reader = csv.reader(file)
-            i = 0
-            for doc in csv_reader:
-                if i > 0:
-                    self.get_char_level_features(doc, 3)
-                    self.get_word_level_features()
-                    break
-                i += 1
+        for id, iso_code, text in self.train_data:
+            char_features = self.get_char_level_features(text, k_char, k_char_bg)  # This function doesn't use id and
+                            # iso_code, it just returns a list of numbers (feature vector) for this line of text
+            # TODO: Word-level features
+            # word features = self.get_word_level_features(k_word)
+            # TODO: features.append(char_features + word_features)
+            break
+
         return []
 
-    def get_word_level_features(self, k):
+    def get_word_level_features(self, k=3):
         """
         Computes all linguistic features at word-level.
             Linguistic features computed:
@@ -74,7 +75,7 @@ class LinguisticFeatures:
         """
         word_features = []
 
-        for id, iso_code, text in self.train_data:
+        for id, iso_code, text in self.train_data:  # TODO: This loop exists in outer function: self.get_linguistic_features
             text = text.strip().split()
             term_counter = {}
 
@@ -93,45 +94,82 @@ class LinguisticFeatures:
 
             avg_length = tot_length / len(text)
 
-            word_features.append(term_counter, avg_length)
+        return
 
-
-
-
-
-    def get_char_level_features(self, doc, k=3):
+    def get_char_level_features(self, text, k_char, k_char_bg):
         """
         Computes all linguistic features at character-level.
             Linguistic features computed:
                 (1) Top k frequent characters
                 (2) Ratio of whitespace to number of chars in doc
-                (3) Ratio of alphanumeric chars to other chars  # TODO
-                (4) Ratio of lower-case to upper-case chars  # TODO
+                (3) Ratio of alphanumeric chars to all chars
+                (4) Ratio of lower-case and upper-case chars to all chars
+                (5) Top k frequent bigrams
+
+        :returns: char_features; List; each item is either an int (representing index) or float (ratio)
+                                 The returned list should have length = k_char + k_char_bg + 4
         """
-        chars = [c for c in doc[3]]  # Ignore whitespace
+        char_features = []
+
+        chars = []  # Ignore whitespace
+        char_bgs = []
+        for i in range(0, len(text)):
+            if i+1 < len(text):
+                char_bgs.append(text[i]+text[i+1])
+            chars.append(text[i])
+
+        char_bg_indices = [self.loaded_char_indices.get_char_bigram_index(cbg) for cbg in char_bgs]
         char_indices = [self.loaded_char_indices.get_char_index(c) for c in chars]
 
         whitespace_idx = self.loaded_char_indices.get_char_index(' ')  # Index of whitespace
 
         # Find top k frequent characters
-        top_k_char_indices = self.get_top_k_chars(char_indices, whitespace_idx, k)
-        print("Top k char indices: ", top_k_char_indices)
+        top_k_char_indices = self.get_top_k_chars(char_indices, whitespace_idx, k_char)
+        char_features.extend(top_k_char_indices)
+
+        top_k_char_bigram_counter = Counter(char_bg_indices).most_common(k_char_bg)
+        top_k_char_bigram_indices = [idx for idx, count in top_k_char_bigram_counter]
+        char_features.extend(top_k_char_bigram_indices)
 
         # Calculate ratio of whitespace to number of chars
         chars_count = Counter(char_indices)
         whitespace_ratio = chars_count[whitespace_idx] / sum(chars_count.values())
-        print("Ratio of whitespace to num of all chars: ", whitespace_ratio)
+        char_features.append(whitespace_ratio)
 
-        # Calculate ratio of alphanumeric chars to other chars
-        # TODO
+        alnum_count = 0
+        upper_count = 0
+        lower_count = 0
+        for char_idx in chars_count.keys():
+            if self.loaded_char_indices[char_idx, "unigram"].isalnum():
+                alnum_count += chars_count[char_idx]
+            if self.loaded_char_indices[char_idx, "unigram"].isupper():
+                upper_count += chars_count[char_idx]
+            if self.loaded_char_indices[char_idx, "unigram"].islower():
+                lower_count += chars_count[char_idx]
 
-        # Calculate ratio of lower-case to upper-case chars
-        # TODO: To be discussed
+        # Calculate ratio of alphanumeric chars to all chars
+        alnum_ratio = alnum_count / sum(chars_count.values())
+        char_features.append(alnum_ratio)
 
-        return
+        # Calculate ratio of upper-case to all chars
+        upper_ratio = upper_count / sum(chars_count.values())
+        char_features.append(upper_ratio)
+
+        # Calculate ratio of lower-case to all chars
+        lower_ratio = lower_count / sum(chars_count.values())
+        char_features.append(lower_ratio)
+
+        # print("Top k char indices: ", top_k_char_indices)
+        # print("Ratio of whitespace to num of all chars: ", whitespace_ratio)
+        # print("Ratio of alphanumeric chars to all chars: ", alnum_ratio)
+        # print("Upper case ratio: ", upper_ratio)
+        # print("Lower case ratio: ", lower_ratio)
+        # print(char_features)
+
+        return char_features
 
     @staticmethod
-    def get_top_k_chars(char_indices, whitespace_idx, k=3):
+    def get_top_k_chars(char_indices, whitespace_idx, k):
         """
         Find the n most frequent characters in a document (excluding whitespace), and return the indices of the n most
         frequent characters in a list.
@@ -142,9 +180,9 @@ class LinguisticFeatures:
         """
         char_indices_without_space = [i for i in char_indices if i is not whitespace_idx]
 
-        # TODO: Raise error if doc length < k
+        # TODO: If doc length < k, return -1
         top_n_chars = Counter(char_indices_without_space).most_common(k)
-        top_n_char_indices = [char for char, count in top_n_chars]
+        top_n_char_indices = [idx for idx, count in top_n_chars]
 
         return top_n_char_indices
 
@@ -179,6 +217,10 @@ class LinguisticFeatures:
 # lf.process_data(
 #     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
 # )
+
+
+# lf = LinguisticFeatures('../../data/train.csv', '../../data/char2idx.pickle')
+# lf.get_linguistic_features(3, 3)  # Note: argument k (top k char), argument n (top n char bigrams)
 
 
 if __name__ == '__main__':
