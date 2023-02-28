@@ -1,6 +1,7 @@
 import pickle
 import os
 import csv
+import numpy as np
 from collections import Counter
 from src.preprocess import char_index
 from src.preprocess.iso_code_to_language import ISOCodeToLanguage
@@ -15,8 +16,7 @@ class LinguisticFeatures:
 
         self.loaded_char_indices = None
 
-        # feature_vectors = self.get_linguistic_features()
-        return
+        feature_vectors = self.get_linguistic_features()
 
 
     def process_data(self, train_data_path):
@@ -46,7 +46,13 @@ class LinguisticFeatures:
 
     def get_linguistic_features(self, k_char=3, k_word=3, k_char_bg=3):
         """
+        :param:
+            int k_char (top-k char), int k_word (top-k term), int k_char_bg (top-k char bigrams)
+
         Iterate through the dataset and compute linguistic feature vectors for each document in data.
+
+        :returns:
+            a numpy array of numpy array, where cell a_ij corresponds to feature j in instance i
         """
         # Load char-to-index mapping from pickle file
         self.loaded_char_indices = self.create_char_indices(self.train_data_path, self.pickle_file_out)
@@ -55,46 +61,58 @@ class LinguisticFeatures:
 
         # Process each instance/doc in train data
         for id, iso_code, text in self.train_data:
+            word_char_features = []
+
             char_features = self.get_char_level_features(text, k_char, k_char_bg)  # This function doesn't use id and
                             # iso_code, it just returns a list of numbers (feature vector) for this line of text
+
+            word_features = self.get_word_level_features(text, k_word)
+
+
             # TODO: Word-level features
-            # word features = self.get_word_level_features(k_word)
             # TODO: features.append(char_features + word_features)
-            break
 
-        return []
+            word_char_features.extend(char_features)
+            word_char_features.extend(word_features)
+            word_char_features = np.array(word_char_features)
 
-    def get_word_level_features(self, k=3):
+            features.append(word_char_features)
+        return np.array(features)
+
+    def get_word_level_features(self, text, k=3):
         """
         Computes all linguistic features at word-level.
             Linguistic features computed:
-                (1) Top k frequent words
+                (1) Top k frequent words (default k is 3)
                 (2) Average length of the full word
 
-        :returns:
+        :returns: A word_level feature vector as a list:
+            [top1term, top2term, ..., topkterm, avgtermlength]
         """
         word_features = []
 
-        for id, iso_code, text in self.train_data:  # TODO: This loop exists in outer function: self.get_linguistic_features
-            text = text.strip().split()
-            term_counter = {}
+        text = text.strip().split()
+        term_counter = {}
 
-            tot_length = 0
-            tot_term = 0
-            for term in text:
-                tot_length += len(term)
+        tot_length = 0
+        for term in text:
+            tot_length += len(term)
 
-                if term not in term_counter:
-                    term_counter[term] = 0
-                term_counter[term] += 1
+            if term not in term_counter:
+                term_counter[term] = 0
+            term_counter[term] += 1
+            print("term", term)
 
+        # gets top k terms
+        term_counter = sorted(term_counter.items(), key=lambda item: item[1])[:k]
+        top_k_terms = [self.loaded_char_indices.get_term_index(term[0]) for term in term_counter]
+        word_features.extend(top_k_terms)
 
-            term_counter = sorted(term_counter.items(), key=lambda item: item[1])[:k]
-            term_counter = [term for term, value in term_counter]
+        # gets avg_length
+        avg_length = tot_length / len(text)
+        word_features.append(avg_length)
 
-            avg_length = tot_length / len(text)
-
-        return
+        return word_features
 
     def get_char_level_features(self, text, k_char, k_char_bg):
         """
@@ -213,6 +231,9 @@ class LinguisticFeatures:
 #     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
 #     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/pickle_objects/train_char_indices.pickle")
 # lf.get_linguistic_features()
+# test_text = "तू आज काय करतेयस?"
+# test_word_features = lf.get_word_level_features(test_text, 3)
+# print(test_word_features)
 # # lf.get_word_level_features()
 # lf.process_data(
 #     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
