@@ -1,4 +1,5 @@
 import json
+import pickle
 
 
 class ISOCodeToLanguage:
@@ -6,8 +7,8 @@ class ISOCodeToLanguage:
         Object mapping ISO codes to their respective English name
     """
 
-    def __init__(self) -> None:
-        with open("data/lan_to_language.json") as f:
+    def __init__(self, iso_code_path="data/lan_to_language.json") -> None:
+        with open(iso_code_path) as f:
             self.iso_to_lang = json.load(f)
 
 
@@ -29,6 +30,20 @@ class ISOCodeToLanguage:
         return str(self.iso_to_lang)
 
 
+    def save(self, pickle_file_path):
+        """
+        :param output_file_path: The file path where the pickle file should be stored
+            Saves the instance to a pickle file to be loaded in later :)
+        :return: None
+        """
+        with open(pickle_file_path, 'wb') as pickle_file:
+            pickle.dump(self, pickle_file, pickle.HIGHEST_PROTOCOL)
+
+
 if __name__ == '__main__':
+
+    pickle_file_path = sys.argv[1]
+
     iso_to_lang = ISOCodeToLanguage()
+    iso_to_lang.save(pickle_file_path)
 

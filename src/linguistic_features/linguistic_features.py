@@ -18,6 +18,8 @@ class LinguisticFeatures:
 
         feature_vectors = self.get_linguistic_features()
 
+        print(feature_vectors)
+
 
     def process_data(self, train_data_path):
         """
@@ -101,7 +103,6 @@ class LinguisticFeatures:
             if term not in term_counter:
                 term_counter[term] = 0
             term_counter[term] += 1
-            print("term", term)
 
         # gets top k terms
         term_counter = sorted(term_counter.items(), key=lambda item: item[1])[:k]
@@ -186,6 +187,11 @@ class LinguisticFeatures:
 
         return char_features
 
+
+    def save(self, output_pickle_file):
+        with open(output_pickle_file, 'wb') as output:
+            pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
     @staticmethod
     def get_top_k_chars(char_indices, whitespace_idx, k):
         """
@@ -206,18 +212,22 @@ class LinguisticFeatures:
 
     @staticmethod
     def create_char_indices(train_data_path, pickle_file_out):
+        """
+            # print(loaded_char_indices.get_char_index("他"))  # returns 283 for data/train.csv
+            # print(loaded_char_indices.get_char_bigram_index("シャ"))  # returns 2149 for data/train.csv
+            # print(loaded_char_indices.get_term_index("Kros")) # returns 330 for data/train.csv
+            # print(loaded_char_indices[0, "unigram"])  # returns 'M' for data/train.csv
+            # print(loaded_char_indices[0, "bigram"])  # returns '<s>M' for data/train.csv
+            # print(loaded_char_indices[0, "term"]) # returns 'Mi' for data/train.csv
+        :param train_data_path: the file path for the training data
+        :param pickle_file_out: the file path for the indices pickle file
+        :return: A src.preprocess.CharIndex object
+        """
         if not os.path.isfile(pickle_file_out):
             char_index.create_char_indices(train_data_path, pickle_file_out)
 
         with open(pickle_file_out, 'rb') as f:
             loaded_char_indices = pickle.load(f, encoding="utf-8")
-
-        print(loaded_char_indices.get_char_index("他"))  # returns 283 for data/train.csv
-        print(loaded_char_indices.get_char_bigram_index("シャ"))  # returns 2149 for data/train.csv
-        print(loaded_char_indices.get_term_index("Kros")) # returns 330 for data/train.csv
-        print(loaded_char_indices[0, "unigram"])  # returns 'M' for data/train.csv
-        print(loaded_char_indices[0, "bigram"])  # returns '<s>M' for data/train.csv
-        print(loaded_char_indices[0, "term"]) # returns 'Mi' for data/train.csv
 
         return loaded_char_indices
 
@@ -225,19 +235,6 @@ class LinguisticFeatures:
     def make_iso_codes():
         iso_codes = ISOCodeToLanguage()
         return iso_codes
-
-
-# lf = LinguisticFeatures(
-#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
-#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/pickle_objects/train_char_indices.pickle")
-# lf.get_linguistic_features()
-# test_text = "तू आज काय करतेयस?"
-# test_word_features = lf.get_word_level_features(test_text, 3)
-# print(test_word_features)
-# # lf.get_word_level_features()
-# lf.process_data(
-#     "/Users/sambriggs/Documents/CLMS/Winter_2023/CSE_573/final_project/data/train.csv",
-# )
 
 
 # lf = LinguisticFeatures('../../data/train.csv', '../../data/char2idx.pickle')
