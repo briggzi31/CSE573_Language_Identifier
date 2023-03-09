@@ -22,6 +22,8 @@ def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, tra
     train_vectors = lf_train.feature_vectors
     train_gold_labels = lf_train.gold_labels
 
+    # TODO: Train dev split here
+
     if not os.path.isfile(train_pickle_file):
         with open(train_pickle_file, 'wb') as output:
             pickle.dump(train_vectors, output, pickle.HIGHEST_PROTOCOL)
