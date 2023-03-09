@@ -10,7 +10,6 @@ def process_test_data():
     pass
 
 
-
 def process_train_data(train_data, indices_pickle_file, topk_pickle_file):
     indices = LinguisticFeatures.create_char_indices(train_data, indices_pickle_file, topk_pickle_file)
     topk_chars_terms = TopKCharsAndTerms.create_topk_chars_and_terms(topk_pickle_file, indices_pickle_file)
