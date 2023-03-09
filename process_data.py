@@ -38,8 +38,12 @@ if __name__ == '__main__':
     test_data = sys.argv[2]
     indices_pickle_file = sys.argv[3]
     topk_pickle_file = sys.argv[4]
+    # Train set feature vectors and true labels
     train_vector_pickle = sys.argv[5]
-    gold_label_pickle_file = sys.argv[6]
+    train_gold_label_pickle = sys.argv[6]
+    # Dev set feature vectors and true labels
+    dev_vector_pickle = sys.argv[7]
+    dev_gold_label_pickle = sys.argv[8]
 
     create_feature_vectors(
         train_data, test_data, indices_pickle_file, topk_pickle_file, train_vector_pickle, gold_label_pickle_file)
