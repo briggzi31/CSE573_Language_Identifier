@@ -83,8 +83,8 @@ class TopKCharsAndTerms:
 
     def term_in_bottomk(self, term):
         """
-        :param term: Either the term as a string or its corresponding index
-        :return: A boolean, true if the given term is in the bottomk
+        :param term: The term as a string
+        :return: A boolean, true if the given term is in the bottomk, false otherwise
         """
         return term in self.bottomk_terms
 
@@ -114,9 +114,9 @@ class TopKCharsAndTerms:
 
 
     @staticmethod
-    def create_topk_chars_and_terms(topk_pickle_file, indices_pickle_file):
+    def create_topk_chars_and_terms(topk_pickle_file, indices_pickle_file, k=30):
         if not os.path.isfile(topk_pickle_file):
-            topk_chars_terms = TopKCharsAndTerms(indices_pickle_file)
+            topk_chars_terms = TopKCharsAndTerms(indices_pickle_file, k)
             topk_chars_terms.save(topk_pickle_file)
 
         with open(topk_pickle_file, 'rb') as f:

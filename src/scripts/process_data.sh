@@ -1,16 +1,15 @@
 #!/bin/sh
 
-python3 process_data.py $1 $2 $3 $4
-echo "finished preprocessing training data"
-
-# ex: ./src/scripts/process_data.sh data/train.csv pickle_objects/train_char_indices.pickle pickle_objects/train_topk.pickle
-# ex: ./src/scripts/process_data.sh data/test.csv pickle_objects/test_char_indices.pickle pickle_objects/test_topk.pickle
-
-
-# testing: ./src/scripts/process_data.sh data/testing.csv data/test.csv pickle_objects/testing_char_indices.pickle pickle_objects/testing_topk.pickle
+python3 process_data.py $1 $2 $3 $4 $5 $6
+echo "finished preprocessing train and test data, created feature vectors"
 
 
 # 1: train_data
 # 2: test_data
 # 3: indices pickle file
 # 4: top_k pickle file
+# 5: train_vectors pickle file
+
+# testing: ./src/scripts/process_data.sh data/testing.csv data/test.csv pickle_objects/testing_char_indices.pickle pickle_objects/testing_topk.pickle pickle_objects/testing_train_vectors.pickle pickle_objects/testing_gold_labels.pickle
+
+# run: ./src/scripts/process_data.sh data/train.csv data/test.csv pickle_objects/char_indices.pickle pickle_objects/topk.pickle pickle_objects/train_vectors.pickle pickle_objects/gold_labels.pickle

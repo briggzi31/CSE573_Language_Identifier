@@ -140,8 +140,9 @@ class CharIndex:
         :return: the int corresponding to the given char bigram
             if char bigram not seen before, returns -1
         """
-        # check if char
-        if not (isinstance(bigram, str) and len(bigram) == 2):
+        # check if bigram
+        if not (isinstance(bigram, str) and len(bigram) == 2) and \
+                ("<s>" not in bigram) and ("</s>" not in bigram):
             raise ValueError(f"char argument not type char, instead {bigram}")
 
         try:

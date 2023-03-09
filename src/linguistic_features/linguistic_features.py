@@ -5,20 +5,23 @@ import numpy as np
 from collections import Counter
 from src.preprocess import char_index
 from src.preprocess.iso_code_to_language import ISOCodeToLanguage
+from src.preprocess.topk_chars_terms import TopKCharsAndTerms
 
 
 class LinguisticFeatures:
 
-    def __init__(self, train_data_path, pickle_file_out):
+    def __init__(self, train_data_path, indices_pickle_file, topk_pickle_file):
+        # file paths
         self.train_data_path = train_data_path
+        self.indices_pickle_file = indices_pickle_file
+        self.topk_pickle_file = topk_pickle_file
+
         self.train_data = self.process_data(train_data_path)
-        self.pickle_file_out = pickle_file_out
-
         self.loaded_char_indices = None
+        self.topk_chars_terms = None
 
-        feature_vectors = self.get_linguistic_features()
-
-        print(feature_vectors)
+        self.gold_labels = []
+        self.feature_vectors = self.get_linguistic_features()
 
 
     def process_data(self, train_data_path):
@@ -57,7 +60,10 @@ class LinguisticFeatures:
             a numpy array of numpy array, where cell a_ij corresponds to feature j in instance i
         """
         # Load char-to-index mapping from pickle file
-        self.loaded_char_indices = self.create_char_indices(self.train_data_path, self.pickle_file_out)
+        self.loaded_char_indices = self.create_char_indices(self.train_data_path, self.indices_pickle_file)
+        # Load topk_chars_terms sets over all training data from pickle file
+        self.topk_chars_terms = TopKCharsAndTerms.create_topk_chars_and_terms(
+                self.topk_pickle_file, self.indices_pickle_file)
 
         features = []
 
@@ -65,20 +71,21 @@ class LinguisticFeatures:
         for id, iso_code, text in self.train_data:
             word_char_features = []
 
+            self.gold_labels.append(iso_code)
+
             char_features = self.get_char_level_features(text, k_char, k_char_bg)  # This function doesn't use id and
                             # iso_code, it just returns a list of numbers (feature vector) for this line of text
-
             word_features = self.get_word_level_features(text, k_word)
-
-
-            # TODO: Word-level features
-            # TODO: features.append(char_features + word_features)
 
             word_char_features.extend(char_features)
             word_char_features.extend(word_features)
             word_char_features = np.array(word_char_features)
-
+            # assert len(char_features) == 14
+            # assert len(word_features) == 6
+            # assert len(word_char_features) == 20
+            # print(word_char_features)
             features.append(word_char_features)
+
         return np.array(features)
 
     def get_word_level_features(self, text, k=3):
@@ -87,16 +94,21 @@ class LinguisticFeatures:
             Linguistic features computed:
                 (1) Top k frequent words (default k is 3)
                 (2) Average length of the full word
+                (3) Indicator whether given text contains topk term from whole training data
+                (4) Indicator whether given text contains bottomk term from whole training data
 
         :returns: A word_level feature vector as a list:
-            [top1term, top2term, ..., topkterm, avgtermlength]
+            [top1term, top2term, ..., topkterm, avgtermlength, contains_topk_term, contains_bottomk_term]
         """
         word_features = []
 
         text = text.strip().split()
         term_counter = {}
-
         tot_length = 0
+
+        contains_term_in_topk = False
+        contains_term_in_bottomk = False
+
         for term in text:
             tot_length += len(term)
 
@@ -104,14 +116,41 @@ class LinguisticFeatures:
                 term_counter[term] = 0
             term_counter[term] += 1
 
+
+            if self.topk_chars_terms.term_in_topk(term):
+                contains_term_in_topk = True
+            if self.topk_chars_terms.term_in_bottomk(term):
+                contains_term_in_bottomk = True
+
         # gets top k terms
         term_counter = sorted(term_counter.items(), key=lambda item: item[1])[:k]
+
         top_k_terms = [self.loaded_char_indices.get_term_index(term[0]) for term in term_counter]
+
+        top_k_terms = LinguisticFeatures.pad_list(top_k_terms, k)
+
         word_features.extend(top_k_terms)
 
         # gets avg_length
         avg_length = tot_length / len(text)
         word_features.append(avg_length)
+
+        if contains_term_in_topk:
+            word_features.append(1)
+        else:
+            word_features.append(0)
+
+        if contains_term_in_bottomk:
+            word_features.append(1)
+        else:
+            word_features.append(0)
+
+        # print("topk terms", top_k_terms)
+        # print("avg term length", avg_length)
+        # print("contains term topk", contains_term_in_topk)
+        # print("contains term bottomk", contains_term_in_bottomk)
+        # print(word_features)
+        # print()
 
         return word_features
 
@@ -132,10 +171,34 @@ class LinguisticFeatures:
 
         chars = []  # Ignore whitespace
         char_bgs = []
+
+        char_in_topk = False
+        char_in_bottomk = False
+        bigram_in_topk = False
+        bigram_in_bottomk = False
+
+        # for bigrams
+        # for BOS padding
+        char_bgs.append("<s>"+text[0])
         for i in range(0, len(text)):
+            unigram = text[i]
             if i+1 < len(text):
-                char_bgs.append(text[i]+text[i+1])
-            chars.append(text[i])
+                bigram = text[i]+text[i+1]
+                char_bgs.append(bigram)
+
+            else:  # i == len(text)
+                bigram = text[i]+"</s>"
+                char_bgs.append(bigram)
+            chars.append(unigram)
+
+            if self.topk_chars_terms.char_in_topk(unigram):
+                char_in_topk = True
+            if self.topk_chars_terms.char_in_bottomk(unigram):
+                char_in_topk = True
+            if self.topk_chars_terms.char_bigram_in_topk(bigram):
+                bigram_in_topk = True
+            if self.topk_chars_terms.char_bigram_in_bottomk(bigram):
+                bigram_in_bottomk = True
 
         char_bg_indices = [self.loaded_char_indices.get_char_bigram_index(cbg) for cbg in char_bgs]
         char_indices = [self.loaded_char_indices.get_char_index(c) for c in chars]
@@ -148,6 +211,7 @@ class LinguisticFeatures:
 
         top_k_char_bigram_counter = Counter(char_bg_indices).most_common(k_char_bg)
         top_k_char_bigram_indices = [idx for idx, count in top_k_char_bigram_counter]
+        top_k_char_bigram_indices = LinguisticFeatures.pad_list(top_k_char_bigram_indices, k_char_bg)
         char_features.extend(top_k_char_bigram_indices)
 
         # Calculate ratio of whitespace to number of chars
@@ -178,19 +242,48 @@ class LinguisticFeatures:
         lower_ratio = lower_count / sum(chars_count.values())
         char_features.append(lower_ratio)
 
+        if char_in_topk:
+            char_features.append(1)
+        else:
+            char_features.append(0)
+        if char_in_bottomk:
+            char_features.append(1)
+        else:
+            char_features.append(0)
+        if bigram_in_topk:
+            char_features.append(1)
+        else:
+            char_features.append(0)
+        if bigram_in_bottomk:
+            char_features.append(1)
+        else:
+            char_features.append(0)
+
         # print("Top k char indices: ", top_k_char_indices)
+        # print("Top k bigram indices:", top_k_char_bigram_indices)
         # print("Ratio of whitespace to num of all chars: ", whitespace_ratio)
         # print("Ratio of alphanumeric chars to all chars: ", alnum_ratio)
         # print("Upper case ratio: ", upper_ratio)
         # print("Lower case ratio: ", lower_ratio)
+        # print("char in topk", char_in_topk)
+        # print("char in bottomk", char_in_bottomk)
+        # print("bigram in topk", bigram_in_topk)
+        # print("bigram in bottomk", bigram_in_bottomk)
         # print(char_features)
+        # print()
 
         return char_features
-
 
     def save(self, output_pickle_file):
         with open(output_pickle_file, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
+
+    @staticmethod
+    def pad_list(lst, k):
+        if len(lst) < k:
+            for i in range(k - len(lst)):
+                lst.append(-1)
+        return lst
 
     @staticmethod
     def get_top_k_chars(char_indices, whitespace_idx, k):
@@ -204,14 +297,20 @@ class LinguisticFeatures:
         """
         char_indices_without_space = [i for i in char_indices if i is not whitespace_idx]
 
-        # TODO: If doc length < k, return -1
         top_n_chars = Counter(char_indices_without_space).most_common(k)
+
         top_n_char_indices = [idx for idx, count in top_n_chars]
+
+        # adds -1 if len of text shorter than k
+        top_n_char_indices = LinguisticFeatures.pad_list(top_n_char_indices, k)
+        # if len(top_n_char_indices) < k:
+        #     for i in range(k - len(top_n_char_indices)):
+        #         top_n_char_indices.append(-1)
 
         return top_n_char_indices
 
     @staticmethod
-    def create_char_indices(train_data_path, pickle_file_out):
+    def create_char_indices(train_data_path, indices_pickle_file):
         """
             # print(loaded_char_indices.get_char_index("他"))  # returns 283 for data/train.csv
             # print(loaded_char_indices.get_char_bigram_index("シャ"))  # returns 2149 for data/train.csv
@@ -220,13 +319,13 @@ class LinguisticFeatures:
             # print(loaded_char_indices[0, "bigram"])  # returns '<s>M' for data/train.csv
             # print(loaded_char_indices[0, "term"]) # returns 'Mi' for data/train.csv
         :param train_data_path: the file path for the training data
-        :param pickle_file_out: the file path for the indices pickle file
+        :param indices_pickle_file: the file path for the indices pickle file
         :return: A src.preprocess.CharIndex object
         """
-        if not os.path.isfile(pickle_file_out):
-            char_index.create_char_indices(train_data_path, pickle_file_out)
+        if not os.path.isfile(indices_pickle_file):
+            char_index.create_char_indices(train_data_path, indices_pickle_file)
 
-        with open(pickle_file_out, 'rb') as f:
+        with open(indices_pickle_file, 'rb') as f:
             loaded_char_indices = pickle.load(f, encoding="utf-8")
 
         return loaded_char_indices
