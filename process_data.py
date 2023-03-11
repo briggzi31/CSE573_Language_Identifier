@@ -17,8 +17,15 @@ def process_train_data(train_data, indices_pickle_file, topk_pickle_file):
     return indices, topk_chars_terms
 
 
+def dump_pickle_file(filename, content):
+    if not os.path.isfile(filename):
+        with open(filename, 'wb') as output:
+            pickle.dump(content, output, pickle.HIGHEST_PROTOCOL)
+    return
+
+
 def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, train_pickle_file,
-                           train_gold_label_pickle_file, dev_pickle_file, dev_gold_labbel_pickle_file):
+                           train_gold_label_pickle_file, dev_pickle_file, dev_gold_label_pickle_file):
     lf_train = LinguisticFeatures(train_data, indices, topk_chars_terms)
     vectors = lf_train.feature_vectors
     gold_labels = lf_train.gold_labels
@@ -27,22 +34,11 @@ def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, tra
     x_train, x_dev, y_train, y_dev = train_test_split(vectors, gold_labels)
 
     # Save train set to pickle file
-    if not os.path.isfile(train_pickle_file):
-        with open(train_pickle_file, 'wb') as output:
-            pickle.dump(x_train, output, pickle.HIGHEST_PROTOCOL)
-
-    if not os.path.isfile(train_gold_label_pickle_file):
-        with open(train_gold_label_pickle_file, 'wb') as output:
-            pickle.dump(y_train, output, pickle.HIGHEST_PROTOCOL)
-
+    dump_pickle_file(train_pickle_file, x_train)
+    dump_pickle_file(train_gold_label_pickle_file, y_train)
     # Save dev set to pickle file
-    if not os.path.isfile(dev_pickle_file):
-        with open(dev_pickle_file, 'wb') as output:
-            pickle.dump(x_dev, output, pickle.HIGHEST_PROTOCOL)
-
-    if not os.path.isfile(dev_gold_labbel_pickle_file):
-        with open(dev_gold_labbel_pickle_file, 'wb') as output:
-            pickle.dump(y_dev, output, pickle.HIGHEST_PROTOCOL)
+    dump_pickle_file(dev_pickle_file, x_dev)
+    dump_pickle_file(dev_gold_label_pickle_file, y_dev)
 
 
 if __name__ == '__main__':
