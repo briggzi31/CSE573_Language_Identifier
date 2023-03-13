@@ -40,9 +40,9 @@ class Classifier:
         return
 
 
-if __name__ == '__main__':
-    c = Classifier('pickle_objects/features/train_vectors.pickle',
-                    'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
-                    'pickle_objects/gold_labels/dev_gold_labels.pickle')
+# if __name__ == '__main__':
+    # c = Classifier('pickle_objects/features/train_vectors.pickle',
+    #                 'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
+    #                 'pickle_objects/gold_labels/dev_gold_labels.pickle')
 
 

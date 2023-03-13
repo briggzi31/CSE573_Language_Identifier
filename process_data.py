@@ -31,7 +31,7 @@ def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, tra
     gold_labels = lf_train.gold_labels
 
     # Perform train dev split
-    x_train, x_dev, y_train, y_dev = train_test_split(vectors, gold_labels)
+    x_train, x_dev, y_train, y_dev = train_test_split(vectors, gold_labels, test_size=0.25, random_state=1)
 
     # Save train set to pickle file
     dump_pickle_file(train_pickle_file, x_train)
