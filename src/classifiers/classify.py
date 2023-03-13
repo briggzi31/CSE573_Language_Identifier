@@ -36,9 +36,6 @@ class Classifier:
             self.dev_gold_labels = pickle.load(file)
         return
 
-    def naive_bayes_classify(self):
-        return
-
 
 if __name__ == '__main__':
     c = Classifier('pickle_objects/features/train_vectors.pickle',
