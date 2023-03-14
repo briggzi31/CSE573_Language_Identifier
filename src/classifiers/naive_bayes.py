@@ -22,7 +22,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from tqdm import tqdm
 from src.classifiers.classify import Classifier
@@ -72,17 +71,6 @@ class NaiveBayes(Classifier):
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))
             output.write(classification_report)
-        return
-
-    def main(self):
-        # Testing with smaller datasets
-        # sub_sample = normalized_train[0:1000000, :]
-        # y = self.train_gold_labels[0:1000000]
-        # xt, xtes, yt, ytes = train_test_split(sub_sample, y, test_size=0.2, random_state=1)
-        # model.fit(xt, yt)
-        # y_pred = model.predict(xtes)
-        # y_true = ytes
-        # self.compute_accuracy_score(y_true, y_pred, list(set(y)))
         return
 
     #     # Heatmap
