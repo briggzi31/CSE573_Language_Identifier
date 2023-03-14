@@ -2,6 +2,7 @@ import sys
 # from src.classifiers.naive_bayes import NaiveBayes
 from src.classifiers.decision_tree import DecisionTree
 from src.baseline.majority_vote import MajorityVote
+from src.classifiers.logistic_regression import LogisticRegressionClassifier
 
 
 def make_classifier(
@@ -28,8 +29,6 @@ def make_classifier(
     elif classifier == 2:
         rand = 0
         # model = multinomialNB
-
-
 
     return model
 
