@@ -1,7 +1,7 @@
 """
 Module Name
 -----------
-`naive_bayes_classification`
+`naive_bayes`
 
 Description
 -----------
@@ -13,6 +13,8 @@ as a list of predicted labels.
 Usage
 -----
 """
+import seaborn as sns
+import matplotlib.pyplot as plt
 import sys
 import numpy as np
 import pandas as pd
@@ -22,12 +24,15 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from tqdm import tqdm
+
 from classify import Classifier
 
 
 class NaiveBayes(Classifier):
     def __init__(self, train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file,
                  test_vectors_file, test_gold_labels_file):
+        print("Loading data...")
         super().__init__(train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file,
                          test_vectors_file, test_gold_labels_file)
         self.classes = list(set(self.train_gold_labels))
@@ -35,39 +40,57 @@ class NaiveBayes(Classifier):
 
     def main(self):
         model = MultinomialNB()
-
-        # Normalize the data vectors: scales the data between 0 and 1
-        print('Normalizing data vectors...')
         min_max_scaler = MinMaxScaler()
+
+        # (1) Normalize the data vectors: scales the data between 0 and 1
+        print('Normalizing data vectors...')
+        # 1. min max scaler
         normalized_train = min_max_scaler.fit_transform(self.train_vectors)
         normalized_test = min_max_scaler.fit_transform(self.test_vectors)
-        # print(normalized_train[0:2])
-        # print(self.train_vectors[0:2])
 
-        # Fit Naive Bayes classifier according to X, y.
+        # (2) Split data into batches
+        print('Splitting data into batches...')
+        train_batches = np.split(normalized_train, 6)
+        train_gold_label_batches = np.split(np.array(self.train_gold_labels), 6)
+
+        # (3) Fit Naive Bayes classifier according to X, y.
         print('Fitting the model...')
-        model.fit(normalized_train, self.train_gold_labels)
-        # p.fit(self.train_vectors, self.train_gold_labels)
+        for i in tqdm(range(len(train_batches))):
+            model.partial_fit(train_batches[i], train_gold_label_batches[i], classes=self.classes)
 
-        # Predict
+        # (4) Predict
         print('Predicting labels for test data...')
-        y_pred = model.predict(normalized_test[0:20])
-        y_true = self.test_gold_labels[0:20]
-        # p.predict(self.test_vectors[0:2])
-        # print(self.test_gold_labels[0:2])
+        y_pred = model.predict(normalized_test)
+        y_true = self.test_gold_labels
 
-        # Print confusion matrix
-        self.compute_accuracy_score(y_true, y_pred)
+        # (5) Compute confusion matrix
+        self.compute_accuracy_score(y_true, y_pred, self.classes)
+
+        # Testing with smaller datasets
+        # sub_sample = normalized_train[0:1000000, :]
+        # y = self.train_gold_labels[0:1000000]
+        # xt, xtes, yt, ytes = train_test_split(sub_sample, y, test_size=0.2, random_state=1)
+        # model.fit(xt, yt)
+        # y_pred = model.predict(xtes)
+        # y_true = ytes
+        # self.compute_accuracy_score(y_true, y_pred, list(set(y)))
         return
 
-    def compute_accuracy_score(self, y_true, y_pred):
+    def compute_accuracy_score(self, y_true, y_pred, classes):
         # Accuracy score
         acc = accuracy_score(y_true, y_pred)
         print('Accuracy: ', acc)
         # Confusion matrix
-        cm = confusion_matrix(y_true, y_pred, labels=self.classes)
+        cm = confusion_matrix(y_true, y_pred, labels=classes)
         print('Confusion matrix: ')
         print(cm)
+
+        # Heatmap
+        sns.heatmap(cm.T, square=True, annot=True, fmt='d', cbar=False,
+                    xticklabels=classes, yticklabels=classes)
+        plt.xlabel('true label')
+        plt.ylabel('predicted label')
+        plt.show()
         return
 
 
@@ -84,10 +107,14 @@ if __name__ == '__main__':
     # nb.main()
 
     # Local
-    nb = NaiveBayes('pickle_objects/features/train_vectors.pickle',
-                    'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
-                    'pickle_objects/gold_labels/dev_gold_labels.pickle', 'pickle_objects/features/test_vectors.pickle',
-                    'pickle_objects/gold_labels/test_gold_labels.pickle')
+    nb = NaiveBayes('../../pickle_objects/features/train_vectors.pickle',
+                    '../../pickle_objects/gold_labels/train_gold_labels.pickle', '../../pickle_objects/features/dev_vectors.pickle',
+                    '../../pickle_objects/gold_labels/dev_gold_labels.pickle', '../../pickle_objects/features/test_vectors.pickle',
+                    '../../pickle_objects/gold_labels/test_gold_labels.pickle')
+    # nb = NaiveBayes('pickle_objects/features/train_vectors.pickle',
+    #                 'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
+    #                 'pickle_objects/gold_labels/dev_gold_labels.pickle', 'pickle_objects/features/test_vectors.pickle',
+    #                 'pickle_objects/gold_labels/test_gold_labels.pickle')
     nb.main()
     # print(nb.train_vectors[0:1])
 
