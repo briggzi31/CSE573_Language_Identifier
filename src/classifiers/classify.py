@@ -10,17 +10,26 @@ from sklearn.metrics import f1_score
 
 
 class Classifier:
-    def __init__(self, train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file):
+    def __init__(self, train_vectors_file, train_gold_labels_file,
+                 dev_vectors_file, dev_gold_labels_file,
+                 test_vectors_file, test_gold_labels_file):
         # TODO: test vectors and test gold labels
+        # feature vectors
         self.train_vectors_file = train_vectors_file
         self.dev_vectors_file = dev_vectors_file
+        self.test_vectors_file = test_vectors_file
+
+        # gold labels
         self.train_gold_labels_file = train_gold_labels_file
         self.dev_gold_labels_file = dev_gold_labels_file
+        self.test_gold_labels_file = test_gold_labels_file
 
+        self.test_gold_labels = None
         self.dev_gold_labels = None
         self.train_gold_labels = None
         self.dev_vectors = None
         self.train_vectors = None
+        self.test_vectors = None
 
         self.load_data()
         return
