@@ -51,6 +51,20 @@ class Classifier:
         return
 
 
+    def confusion_matrix(self, predictions, gold_labels):
+        """
+        :param predictions: A ndarray of predicted labels
+        :param gold_labels: A ndarray of gold labels
+
+        :return: A ndarray as a confusion matrix, using sklearns confusion_matrix
+        """
+        return confusion_matrix(gold_labels, predictions)
+
+
+    def classification_report(self, predictions, gold_labels):
+        return classification_report(gold_labels, predictions)
+
+
 if __name__ == '__main__':
     c = Classifier('pickle_objects/features/train_vectors.pickle',
                     'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
