@@ -1,5 +1,5 @@
 import sys
-# from src.classifiers.naive_bayes import NaiveBayes
+from src.classifiers.naive_bayes import NaiveBayes
 from src.classifiers.decision_tree import DecisionTree
 from src.baseline.majority_vote import MajorityVote
 
@@ -26,7 +26,8 @@ def make_classifier(
         model = DecisionTree(train_vectors, train_gold_labels, dev_vectors,
                              dev_gold_labels, test_vectors, test_gold_labels)
     elif classifier == 2:
-        rand = 0
+        model = NaiveBayes(train_vectors, train_gold_labels, dev_vectors,
+                             dev_gold_labels, test_vectors, test_gold_labels)
         # model = multinomialNB
 
 
