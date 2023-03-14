@@ -50,19 +50,30 @@ class Classifier:
             self.test_gold_labels = pickle.load(file)
         return
 
-
-    def confusion_matrix(self, predictions, gold_labels):
+    @ staticmethod
+    def confusion_matrix(predictions, gold_labels):
         """
         :param predictions: A ndarray of predicted labels
         :param gold_labels: A ndarray of gold labels
 
-        :return: A ndarray as a confusion matrix, using sklearns confusion_matrix
+        :return: A string as a confusion matrix, using sklearns confusion_matrix
+        Per sklearns documentation:
+            Confusion matrix whose i-th row and j-th column entry indicates the number
+            of samples with true label being i-th class and predicted label being j-th class.
         """
-        return confusion_matrix(gold_labels, predictions)
+        matrix_header = "columns are predicted labels, rows are true labels:\n"
+        return matrix_header + str(confusion_matrix(gold_labels, predictions)) + "\n"
 
+    @staticmethod
+    def classification_report(predictions, gold_labels):
+        """
+        :param predictions: A ndarray of predicted labels
+        :param gold_labels: A ndarray of gold labels
 
-    def classification_report(self, predictions, gold_labels):
-        return classification_report(gold_labels, predictions)
+        :return: A string representation of the classification report
+        """
+        # hides divide by zero warning
+        return classification_report(gold_labels, predictions, zero_division=0)
 
 
 if __name__ == '__main__':
@@ -70,13 +81,13 @@ if __name__ == '__main__':
                     'pickle_objects/gold_labels/train_gold_labels.pickle', 'pickle_objects/features/dev_vectors.pickle',
                     'pickle_objects/gold_labels/dev_gold_labels.pickle', 'pickle_objects/features/test_vectors.pickle',
                    'pickle_objects/gold_labels/test_gold_labels.pickle')
-    print(c.train_vectors[0:2])
-    print(c.train_gold_labels[0:2])
-
-    print(c.dev_vectors[0:2])
-    print(c.dev_gold_labels[0:2])
-
-    print(c.test_vectors[0:2])
-    print(c.test_gold_labels[0:2])
+    # print(c.train_vectors[0:2])
+    # print(c.train_gold_labels[0:2])
+    #
+    # print(c.dev_vectors[0:2])
+    # print(c.dev_gold_labels[0:2])
+    #
+    # print(c.test_vectors[0:2])
+    # print(c.test_gold_labels[0:2])
 
 

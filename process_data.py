@@ -22,10 +22,10 @@ def dump_pickle_file(filename, content):
 
 def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, train_pickle_file,
                            train_gold_label_pickle_file, dev_pickle_file, dev_gold_label_pickle_file,
-                           test_pickle_file, test_gold_label_pickle_file):
+                           test_pickle_file, test_gold_label_pickle_file, k1=3, k2=3, k3=3):
 
     # create train/dev feature vectors
-    lf_train = LinguisticFeatures(train_data, indices, topk_chars_terms)
+    lf_train = LinguisticFeatures(train_data, indices, topk_chars_terms, k1, k2, k3)
     vectors = lf_train.feature_vectors
     gold_labels = lf_train.gold_labels
 
@@ -33,7 +33,7 @@ def create_feature_vectors(train_data, test_data, indices, topk_chars_terms, tra
     x_train, x_dev, y_train, y_dev = train_test_split(vectors, gold_labels, test_size=0.25, random_state=1)
 
     # create test features vectors
-    lf_test = LinguisticFeatures(test_data, indices, topk_chars_terms)
+    lf_test = LinguisticFeatures(test_data, indices, topk_chars_terms, k1, k2, k3)
     x_test = lf_test.feature_vectors
     y_test = lf_test.gold_labels
 

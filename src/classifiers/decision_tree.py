@@ -23,11 +23,8 @@ class DecisionTree:
 
     def __init__(self, train_vectors_file, train_gold_labels_file,
                  dev_vectors_file, dev_gold_labels_file,
-                 test_vectors_file, test_gold_labels_file
+                 test_vectors_file, test_gold_labels_file, max_depth=20
                  ):
-
-        params = "_k1=" + str(3) + "_k2=" + str(3) + "_k3=" + str(3)
-        train_vectors_file += params
 
         self.hypermodel = Classifier(train_vectors_file, train_gold_labels_file,
                                      dev_vectors_file, dev_gold_labels_file,
@@ -42,13 +39,13 @@ class DecisionTree:
         self.dev_vectors = self.hypermodel.dev_vectors
         self.test_vectors = self.hypermodel.test_vectors
 
-        self.decision_tree = tree.DecisionTreeClassifier(random_state=0, max_depth=50)
+        self.decision_tree = tree.DecisionTreeClassifier(random_state=0, max_depth=max_depth)
 
     def train(self):
         self.decision_tree.fit(self.train_vectors, np.array(self.train_gold_labels))
 
 
-    def predict(self, use_dev):
+    def predict(self, use_dev, output_file):
         if use_dev:
             data = self.dev_vectors
             gold_labels = self.dev_gold_labels
@@ -58,10 +55,11 @@ class DecisionTree:
 
         predictions = self.decision_tree.predict(data, gold_labels)
 
-        confusion_matrix = self.hypermodel.confusion_matrix(predictions, gold_labels)
-        classification_report = self.hypermodel.classification_report(predictions, gold_labels)
+        confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
+        classification_report = Classifier.classification_report(predictions, gold_labels)
 
         # TODO: output to a file?
-        print(confusion_matrix)
-        print(classification_report)
 
+        with open(output_file, 'w') as output:
+            output.write(str(confusion_matrix))
+            output.write(classification_report)
