@@ -60,8 +60,12 @@ class LinguisticFeatures:
             a numpy array of numpy array, where cell a_ij corresponds to feature j in instance i
         """
         # Load char-to-index mapping from pickle file
+        # if train data, creates the pickle file
+        # if test data, reads from pickle fle
         self.loaded_char_indices = self.create_char_indices(self.train_data_path, self.indices_pickle_file)
         # Load topk_chars_terms sets over all training data from pickle file
+        # if train data, creates the pickle file
+        # if test data, reads from pickle fle
         self.topk_chars_terms = TopKCharsAndTerms.create_topk_chars_and_terms(
                 self.topk_pickle_file, self.indices_pickle_file)
 
@@ -80,10 +84,6 @@ class LinguisticFeatures:
             word_char_features.extend(char_features)
             word_char_features.extend(word_features)
             word_char_features = np.array(word_char_features)
-            # assert len(char_features) == 14
-            # assert len(word_features) == 6
-            # assert len(word_char_features) == 20
-            # print(word_char_features)
             features.append(word_char_features)
 
         return np.array(features)
@@ -144,13 +144,6 @@ class LinguisticFeatures:
             word_features.append(1)
         else:
             word_features.append(0)
-
-        # print("topk terms", top_k_terms)
-        # print("avg term length", avg_length)
-        # print("contains term topk", contains_term_in_topk)
-        # print("contains term bottomk", contains_term_in_bottomk)
-        # print(word_features)
-        # print()
 
         return word_features
 
@@ -258,19 +251,6 @@ class LinguisticFeatures:
             char_features.append(1)
         else:
             char_features.append(0)
-
-        # print("Top k char indices: ", top_k_char_indices)
-        # print("Top k bigram indices:", top_k_char_bigram_indices)
-        # print("Ratio of whitespace to num of all chars: ", whitespace_ratio)
-        # print("Ratio of alphanumeric chars to all chars: ", alnum_ratio)
-        # print("Upper case ratio: ", upper_ratio)
-        # print("Lower case ratio: ", lower_ratio)
-        # print("char in topk", char_in_topk)
-        # print("char in bottomk", char_in_bottomk)
-        # print("bigram in topk", bigram_in_topk)
-        # print("bigram in bottomk", bigram_in_bottomk)
-        # print(char_features)
-        # print()
 
         return char_features
 
