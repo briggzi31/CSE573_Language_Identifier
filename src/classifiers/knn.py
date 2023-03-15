@@ -15,8 +15,6 @@ Usage
 """
 from src.classifiers.classify import Classifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, ConfusionMatrixDisplay
-
 
 class KNN(Classifier):
     def __init__(self, train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file,
@@ -48,10 +46,23 @@ class KNN(Classifier):
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))
             output.write(classification_report)
-            output.write('Accuracy: ' + acc)
+            output.write('Accuracy: ' + str(acc))
         return
 
-    @staticmethod
-    def get_acc(y_true, y_pred):
-        acc = accuracy_score(y_true, y_pred)
-        return acc
+
+# Test
+# train pickle
+train_vectors_file = "pickle_objects/features/train_vectors.pickle"
+train_gold_labels_file = "pickle_objects/gold_labels/train_gold_labels.pickle"
+
+# dev pickle
+dev_vectors_file = "pickle_objects/features/dev_vectors.pickle"
+dev_gold_labels_file = "pickle_objects/gold_labels/dev_gold_labels.pickle"
+
+# test pickle
+test_vectors_file = "pickle_objects/features/test_vectors.pickle"
+test_gold_labels_file = "pickle_objects/gold_labels/test_gold_labels.pickle"
+
+k = KNN(train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file, test_vectors_file, test_gold_labels_file)
+k.train()
+k.test(False, 'knn_res.txt')
