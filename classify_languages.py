@@ -24,8 +24,13 @@ def make_classifier(
         model = MajorityVote(train_vectors, train_gold_labels, dev_vectors,
                              dev_gold_labels, test_vectors, test_gold_labels)
     elif classifier == 1:
+        # try:
+        #     max_depth = int(sys.argv[7])
+        # except:
+        #     max_depth = 20
+
         model = DecisionTree(train_vectors, train_gold_labels, dev_vectors,
-                             dev_gold_labels, test_vectors, test_gold_labels)
+                             dev_gold_labels, test_vectors, test_gold_labels, max_depth)
     elif classifier == 2:
         model = NaiveBayes(train_vectors, train_gold_labels, dev_vectors,
                              dev_gold_labels, test_vectors, test_gold_labels)
