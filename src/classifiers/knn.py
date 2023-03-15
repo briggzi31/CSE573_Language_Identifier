@@ -43,7 +43,7 @@ class KNN(Classifier):
 
         confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
         classification_report = Classifier.classification_report(predictions, gold_labels)
-        acc = self.get_acc(gold_labels, predictions)
+        acc = Classifier.get_accuracy(gold_labels, predictions)
 
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))

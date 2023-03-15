@@ -77,7 +77,7 @@ class NaiveBayes(Classifier):
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))
             output.write(classification_report)
-            output.write('Accuracy: ' + acc)
+            output.write('Accuracy: ' + str(acc))
         return
 
     def visualize(self, confusion_matrix):
