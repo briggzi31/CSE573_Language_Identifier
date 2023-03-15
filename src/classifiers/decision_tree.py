@@ -58,8 +58,6 @@ class DecisionTree:
         confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
         classification_report = Classifier.classification_report(predictions, gold_labels)
 
-        # TODO: output to a file?
-
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))
             output.write(classification_report)

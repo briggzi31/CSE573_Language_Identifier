@@ -29,7 +29,9 @@ def make_classifier(
     elif classifier == 2:
         model = NaiveBayes(train_vectors, train_gold_labels, dev_vectors,
                              dev_gold_labels, test_vectors, test_gold_labels)
-        # model = multinomialNB
+    elif classifier == 3:
+        model = LogisticRegressionClassifier(train_vectors, train_gold_labels, dev_vectors,
+                                             dev_gold_labels, test_vectors, test_gold_labels)
 
     return model
 
