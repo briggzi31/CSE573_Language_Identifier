@@ -3,6 +3,7 @@ from src.classifiers.naive_bayes import NaiveBayes
 from src.classifiers.decision_tree import DecisionTree
 from src.baseline.majority_vote import MajorityVote
 from src.classifiers.logistic_regression import LogisticRegressionClassifier
+from src.classifiers.knn import KNN
 
 
 def make_classifier(
@@ -36,6 +37,9 @@ def make_classifier(
                              dev_gold_labels, test_vectors, test_gold_labels)
     elif classifier == 3:
         model = LogisticRegressionClassifier(train_vectors, train_gold_labels, dev_vectors,
+                                             dev_gold_labels, test_vectors, test_gold_labels)
+    elif classifier == 4:
+        model = KNN(train_vectors, train_gold_labels, dev_vectors,
                                              dev_gold_labels, test_vectors, test_gold_labels)
 
     return model
