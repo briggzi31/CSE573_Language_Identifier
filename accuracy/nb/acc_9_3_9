@@ -413,3 +413,4 @@ columns are predicted labels, rows are true labels:
     accuracy                           0.00   2068363
    macro avg       0.00      0.01      0.00   2068363
 weighted avg       0.13      0.00      0.00   2068363
+Accuracy: 0.000594673178740869
