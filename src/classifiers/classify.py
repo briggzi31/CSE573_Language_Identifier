@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from sklearn.metrics import f1_score
 
 
@@ -74,6 +74,17 @@ class Classifier:
         """
         # hides divide by zero warning
         return classification_report(gold_labels, predictions, zero_division=0)
+
+    @staticmethod
+    def get_accuracy(y_true, y_pred):
+        """
+        :param y_pred: A ndarray of predicted labels
+        :param y_true: A ndarray of gold labels
+
+        :return: A string representation of the classification report
+        """
+        acc = accuracy_score(y_true, y_pred)
+        return acc
 
 
 if __name__ == '__main__':

@@ -72,10 +72,12 @@ class NaiveBayes(Classifier):
 
         confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
         classification_report = Classifier.classification_report(predictions, gold_labels)
+        acc = Classifier.get_accuracy(gold_labels, predictions)
 
         with open(output_file, 'w') as output:
             output.write(str(confusion_matrix))
             output.write(classification_report)
+            output.write('Accuracy: ' + acc)
         return
 
     def visualize(self, confusion_matrix):
@@ -83,14 +85,6 @@ class NaiveBayes(Classifier):
         disp.plot()
         plt.show()
         return
-
-    #     # Heatmap
-    #     sns.heatmap(cm.T, square=True, annot=True, fmt='d', cbar=False,
-    #                 xticklabels=classes, yticklabels=classes)
-    #     plt.xlabel('true label')
-    #     plt.ylabel('predicted label')
-    #     plt.show()
-    #     return
 
 
 # nb = NaiveBayes('../../pickle_objects/features/train_vectors.pickle',
