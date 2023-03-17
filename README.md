@@ -1,5 +1,19 @@
 # CSE573 Language Identifier
 
+## Abstract
+
+The project explores the task of language identification (LangID), which involves
+determining the natural language(s) in which a given piece of text is written. The
+task is crucial for natural language processing (NLP) tasks that rely on prior
+knowledge of the natural language domain, such as part-of-speech tagging and
+named-entity recognition. We used 12 linguistically motivated features (which can
+be partitioned into three groups: the top k most frequent characters, tokens, and
+character bigrams in the given text; frequency indicators over the whole data set;
+and orthographic features) and implemented three different methods (Multinomial
+Naive Bayes, Decision Tree, and Logistic Regression) to evaluate their performance
+on classifying the Big Language Detection Dataset, which contains over 10 million
+instances written in 404 languages.
+
 ## Environment Setup
 
 The default python version for this project environment is `Python 3.6.8`
