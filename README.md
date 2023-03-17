@@ -61,3 +61,13 @@ dev_vectors.pickle   train_vectors.pickle
 dev_gold_labels.pickle   train_gold_labels.pickle
 ```
 
+
+
+## Running on Condor
+
+The pickle objects are stored in the following dir:
+
+```
+/home2/lexwang/po
+```
+

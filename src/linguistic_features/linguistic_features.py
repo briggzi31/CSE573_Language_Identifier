@@ -283,9 +283,6 @@ class LinguisticFeatures:
 
         # adds -1 if len of text shorter than k
         top_n_char_indices = LinguisticFeatures.pad_list(top_n_char_indices, k)
-        # if len(top_n_char_indices) < k:
-        #     for i in range(k - len(top_n_char_indices)):
-        #         top_n_char_indices.append(-1)
 
         return top_n_char_indices
 
