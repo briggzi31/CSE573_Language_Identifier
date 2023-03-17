@@ -13,9 +13,8 @@ as a list of predicted labels.
 Usage
 -----
 """
-# import seaborn as sns
-# import matplotlib.pyplot as plt
 import numpy as np
+import sklearn
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, ConfusionMatrixDisplay
@@ -61,32 +60,15 @@ class NaiveBayes(Classifier):
         predictions = self.model.predict(self.normalized_test)
         gold_labels = self.test_gold_labels
 
-        confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
-        classification_report = Classifier.classification_report(predictions, gold_labels)
+        conf_matrix = Classifier.confusion_matrix(predictions, gold_labels)
+        class_report = Classifier.classification_report(predictions, gold_labels)
         acc = Classifier.get_accuracy(gold_labels, predictions)
 
         with open(output_file, 'w') as output:
-            output.write(str(confusion_matrix))
-            output.write(classification_report)
+            output.write(str(conf_matrix))
+            output.write(class_report)
             output.write('Accuracy: ' + str(acc))
         return
-
-    # def visualize(self, confusion_matrix):
-    #     disp = ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=self.model.classes_)
-    #     disp.plot()
-    #     plt.show()
-    #     return
-
-
-# Run local
-# nb = NaiveBayes('../../pickle_objects/features/train_vectors.pickle',
-#                 '../../pickle_objects/gold_labels/train_gold_labels.pickle',
-#                 '../../pickle_objects/features/dev_vectors.pickle',
-#                 '../../pickle_objects/gold_labels/dev_gold_labels.pickle',
-#                 '../../pickle_objects/features/test_vectors.pickle',
-#                 '../../pickle_objects/gold_labels/test_gold_labels.pickle')
-# nb.train()
-# nb.predict(False, 'abcd')
 
 
 

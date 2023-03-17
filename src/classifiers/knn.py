@@ -13,8 +13,8 @@ as a list of predicted labels.
 Usage
 -----
 """
+import sys
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from src.classifiers.classify import Classifier
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -42,7 +42,7 @@ class KNN(Classifier):
             data = self.test_vectors
             gold_labels = self.test_gold_labels
 
-        predictions = self.model.predict(data)
+        predictions = self.model.predict(self.test_vectors)
 
         confusion_matrix = Classifier.confusion_matrix(predictions, gold_labels)
         classification_report = Classifier.classification_report(predictions, gold_labels)
@@ -54,20 +54,3 @@ class KNN(Classifier):
             output.write('Accuracy: ' + str(acc))
         return
 
-
-# Test
-# train pickle
-train_vectors_file = "../../pickle_objects/features/train_vectors.pickle"
-train_gold_labels_file = "../../pickle_objects/gold_labels/train_gold_labels.pickle"
-
-# dev pickle
-dev_vectors_file = "../../pickle_objects/features/dev_vectors.pickle"
-dev_gold_labels_file = "../../pickle_objects/gold_labels/dev_gold_labels.pickle"
-
-# test pickle
-test_vectors_file = "../../pickle_objects/features/test_vectors.pickle"
-test_gold_labels_file = "../../pickle_objects/gold_labels/test_gold_labels.pickle"
-
-k = KNN(train_vectors_file, train_gold_labels_file, dev_vectors_file, dev_gold_labels_file, test_vectors_file, test_gold_labels_file)
-k.train()
-k.test(False, 'knn_res.txt')
